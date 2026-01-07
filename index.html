@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ລະບົບຈັດການວຽກ ໄກສອນ | Art's Task Manager</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Lao:wght@400;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #1a2a3a; 
+            --accent: #3498db;  
+            --success: #27ae60;
+            --success-light: #eafaf1;
+            --warning: #f39c12;
+            --warning-light: #fff9eb;
+            --neutral: #95a5a6;
+            --neutral-light: #f8f9fa;
+            --danger: #e74c3c;
+            --bg: #f0f2f5;
+            --card-bg: #ffffff;
+            --text-dark: #2c3e50;
+        }
+
+        body { font-family: 'Inter', 'Noto Sans Lao', sans-serif; background-color: var(--bg); color: var(--text-dark); margin: 0; padding: 20px; }
+        .container { max-width: 1400px; margin: 0 auto; }
+
+        /* The Great Wave Header */
+        header {
+            position: relative;
+            display: flex; justify-content: space-between; align-items: center;
+            background-image: url('https://upload.wikimedia.org/wikipedia/commons/thumb/0/0d/Great_Wave_off_Kanagawa2.jpg/1280px-Great_Wave_off_Kanagawa2.jpg');
+            background-size: cover;
+            background-position: center 40%;
+            padding: 4rem 2.5rem; border-radius: 20px;
+            color: white; box-shadow: 0 10px 30px rgba(0,0,0,0.2); margin-bottom: 30px;
+            overflow: hidden;
+        }
+        
+        header::before {
+            content: "";
+            position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(to right, rgba(0,0,0,0.7), rgba(0,0,0,0.2));
+            z-index: 1;
+        }
+
+        .header-titles { position: relative; z-index: 2; }
+        .header-titles h1 { margin: 0; font-size: 2.8rem; font-weight: 700; text-shadow: 2px 2px 8px rgba(0,0,0,0.8); }
+        .header-titles p { margin: 5px 0 0; font-size: 1.3rem; opacity: 0.9; font-weight: 300; }
+
+        .header-actions { position: relative; z-index: 2; display: flex; gap: 10px; }
+
+        /* Stats & Search */
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 25px; }
+        .stat-card { background: var(--card-bg); padding: 20px; border-radius: 15px; border-bottom: 4px solid var(--accent); box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .stat-card h3 { margin: 0; font-size: 2rem; color: var(--primary); }
+        
+        .search-container { margin-bottom: 25px; }
+        .search-bar { 
+            width: 100%; padding: 18px 25px; border-radius: 15px; border: 1px solid #ddd; 
+            font-size: 1.1rem; box-shadow: 0 4px 12px rgba(0,0,0,0.05); outline: none;
+            transition: 0.3s;
+        }
+        .search-bar:focus { border-color: var(--accent); box-shadow: 0 4px 20px rgba(52, 152, 219, 0.2); }
+
+        /* Input Form */
+        .form-section { background: var(--card-bg); padding: 25px; border-radius: 15px; margin-bottom: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        .grid-inputs { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; }
+
+        label { font-size: 0.8rem; font-weight: 600; color: #666; margin-bottom: 6px; display: block; }
+        input, select { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 10px; font-size: 0.9rem; background: #fafafa; }
+
+        .btn { padding: 12px 24px; border: none; border-radius: 10px; cursor: pointer; font-weight: 600; transition: 0.2s; }
+        .btn-main { background: var(--accent); color: white; }
+        .btn-main:hover { background: #2980b9; transform: translateY(-2px); }
+        
+        /* Table */
+        .table-container { background: white; border-radius: 20px; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
+        table { width: 100%; border-collapse: collapse; }
+        th { background: #f8f9fa; color: #888; padding: 18px; text-align: left; font-size: 0.75rem; text-transform: uppercase; cursor: pointer; border-bottom: 2px solid #eee; }
+        td { padding: 18px; border-bottom: 1px solid #f1f2f6; font-size: 0.95rem; }
+
+        .row-not-started { background-color: #ffffff; }
+        .row-pending { background-color: var(--warning-light); }
+        .row-done { background-color: var(--success-light); }
+
+        .badge { padding: 5px 12px; border-radius: 8px; font-size: 0.75rem; font-weight: 700; }
+        .prio-High { background: #ff7675; color: white; }
+        .prio-Medium { background: #ffeaa7; color: #d6a01d; }
+        .prio-Low { background: #55efc4; color: #00b894; }
+
+        .progress-bar { height: 8px; background: #eee; border-radius: 10px; overflow: hidden; margin-top: 8px; }
+        .progress-fill { height: 100%; transition: width 0.4s ease; }
+        
+        .status-select { background: transparent; border: 1px solid #ddd; padding: 5px; border-radius: 5px; font-weight: 600; cursor: pointer; }
+
+        @media print { .no-print { display: none; } header { padding: 2rem; background-image: none !important; color: black; } header::before { display: none; } }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <div class="header-titles">
+            <h1>ລະບົບຈັດການວຽກ ໄກສອນ</h1>
+            <p>Art's Task Manager</p>
+        </div>
+        <div class="header-actions no-print">
+            <button class="btn" style="background:rgba(255,255,255,0.3); color:white" onclick="window.print()">Print List</button>
+            <button class="btn" style="background:var(--success); color:white" onclick="exportToCSV()">Export Excel</button>
+        </div>
+    </header>
+
+    <div class="stats-grid">
+        <div class="stat-card"><h3><span id="statTotal">0</span></h3><p>Total Tasks (ທັງໝົດ)</p></div>
+        <div class="stat-card" style="border-bottom-color: var(--warning)"><h3><span id="statPending">0</span></h3><p>Pending (ພວມດຳເນີນ)</p></div>
+        <div class="stat-card" style="border-bottom-color: var(--success)"><h3><span id="statDone">0</span></h3><p>Done (ສຳເລັດແລ້ວ)</p></div>
+        <div class="stat-card" style="border-bottom-color: var(--danger)"><h3><span id="statOverdue">0</span></h3><p>Late (ກາຍກຳນົດ)</p></div>
+    </div>
+
+    <div class="search-container no-print">
+        <input type="text" id="globalSearch" class="search-bar" placeholder="🔍 Search by task name, person, or details... (ຄົ້ນຫາຂໍ້ມູນວຽກ...)" onkeyup="renderTasks()">
+    </div>
+
+    <div class="form-section no-print">
+        <div class="grid-inputs">
+            <div><label>Task Name (ຊື່ວຽກ)</label><input type="text" id="taskTitle" placeholder="Enter task..."></div>
+            <div><label>Priority</label>
+                <select id="taskPriority">
+                    <option value="3-High">High (ສູງ)</option>
+                    <option value="2-Medium" selected>Medium (ກາງ)</option>
+                    <option value="1-Low">Low (ຕ່ຳ)</option>
+                </select>
+            </div>
+            <div><label>Assignee</label><input type="text" id="assignee" placeholder="Name"></div>
+            <div><label>Deadline</label><input type="date" id="dueDate"></div>
+            <div><label>File Path</label><input type="text" id="localPath" placeholder="D:\Desktop\Files"></div>
+            <div style="display: flex; align-items: flex-end;">
+                <button class="btn btn-main" onclick="addTask()" style="width:100%">+ Add Task</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th onclick="sortTasks('title')">Task Description ↕</th>
+                    <th onclick="sortTasks('priority')">Priority ↕</th>
+                    <th onclick="sortTasks('assignee')">Assignee ↕</th>
+                    <th onclick="sortTasks('dueDate')">Deadline ↕</th>
+                    <th onclick="sortTasks('finishedDate')">Finished Date ↕</th>
+                    <th>Progress</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody id="taskBody"></tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    let tasks = JSON.parse(localStorage.getItem('artTasksFinal')) || [];
+    let currentSort = { key: '', dir: 'asc' };
+
+    function addTask() {
+        const title = document.getElementById('taskTitle').value;
+        if (!title) return alert("Please enter task name!");
+        tasks.push({
+            id: Date.now(),
+            title: title,
+            priority: document.getElementById('taskPriority').value,
+            assignee: document.getElementById('assignee').value,
+            dueDate: document.getElementById('dueDate').value,
+            finishedDate: '',
+            localPath: document.getElementById('localPath').value,
+            status: 'Not Started Yet',
+            progress: 0
+        });
+        saveAndRender();
+        document.getElementById('taskTitle').value = '';
+        document.getElementById('localPath').value = '';
+    }
+
+    function sortTasks(key) {
+        let dir = 'asc';
+        if (currentSort.key === key && currentSort.dir === 'asc') dir = 'desc';
+        currentSort = { key, dir };
+        tasks.sort((a, b) => {
+            let valA = a[key] || '';
+            let valB = b[key] || '';
+            return dir === 'asc' ? valA.toString().localeCompare(valB.toString()) : valB.toString().localeCompare(valA.toString());
+        });
+        renderTasks();
+    }
+
+    function saveAndRender() {
+        localStorage.setItem('artTasksFinal', JSON.stringify(tasks));
+        renderTasks();
+        updateStats();
+    }
+
+    function updateStats() {
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('statTotal').innerText = tasks.length;
+        document.getElementById('statDone').innerText = tasks.filter(t => t.status === 'Done/Completed').length;
+        document.getElementById('statPending').innerText = tasks.filter(t => t.status === 'Pending/In Progress').length;
+        document.getElementById('statOverdue').innerText = tasks.filter(t => t.dueDate && t.dueDate < today && t.status !== 'Done/Completed').length;
+    }
+
+    function renderTasks() {
+        const tbody = document.getElementById('taskBody');
+        const query = document.getElementById('globalSearch').value.toLowerCase();
+        const today = new Date().toISOString().split('T')[0];
+        tbody.innerHTML = '';
+
+        tasks.filter(t => 
+            t.title.toLowerCase().includes(query) || 
+            t.assignee.toLowerCase().includes(query)
+        ).forEach(task => {
+            const isDone = task.status === 'Done/Completed';
+            const isPending = task.status === 'Pending/In Progress';
+            const rowClass = isDone ? 'row-done' : (isPending ? 'row-pending' : 'row-not-started');
+            
+            const row = document.createElement('tr');
+            row.className = rowClass;
+            row.innerHTML = `
+                <td><strong>${task.title}</strong></td>
+                <td><span class="badge prio-${task.priority.split('-')[1]}">${task.priority.split('-')[1]}</span></td>
+                <td>${task.assignee || '---'}</td>
+                <td style="color:${task.dueDate < today && !isDone ? 'var(--danger)' : 'inherit'}">${task.dueDate || '---'}</td>
+                <td style="color:var(--success); font-weight:700">${task.finishedDate || '---'}</td>
+                <td style="width: 150px">
+                    <div class="progress-bar"><div class="progress-fill" style="width:${task.progress}%; background:${isDone ? 'var(--success)' : (isPending ? 'var(--warning)' : 'var(--neutral)')}"></div></div>
+                    <input type="range" value="${task.progress}" onchange="updateProgress(${task.id}, this.value)" class="no-print" style="width:100%">
+                </td>
+                <td>
+                    <select onchange="updateStatus(${task.id}, this.value)" class="status-select">
+                        <option ${task.status === 'Not Started Yet' ? 'selected' : ''}>Not Started Yet</option>
+                        <option ${task.status === 'Pending/In Progress' ? 'selected' : ''}>Pending/In Progress</option>
+                        <option ${task.status === 'Done/Completed' ? 'selected' : ''}>Done/Completed</option>
+                    </select>
+                </td>
+                <td class="no-print">
+                    <div style="display:flex; gap:8px">
+                        ${task.localPath ? `<button onclick="copyPath('${task.localPath.replace(/\\/g, '\\\\')}')" title="Copy File Path" style="border:1px solid #ddd; background:white; cursor:pointer; border-radius:6px; padding:4px 8px">📂</button>` : ''}
+                        <button onclick="deleteTask(${task.id})" style="border:none; background:none; cursor:pointer; font-size:1.1rem; color:#ccc">✕</button>
+                    </div>
+                </td>
+            `;
+            tbody.appendChild(row);
+        });
+    }
+
+    function updateStatus(id, val) {
+        const task = tasks.find(t => t.id === id);
+        task.status = val;
+        if(val === 'Done/Completed') { task.progress = 100; task.finishedDate = new Date().toISOString().split('T')[0]; }
+        else { task.finishedDate = ''; if(val === 'Not Started Yet') task.progress = 0; }
+        saveAndRender();
+    }
+
+    function updateProgress(id, val) {
+        const task = tasks.find(t => t.id === id);
+        task.progress = val;
+        if(val == 100) { task.status = 'Done/Completed'; task.finishedDate = new Date().toISOString().split('T')[0]; }
+        else if (val > 0) { task.status = 'Pending/In Progress'; task.finishedDate = ''; }
+        else { task.status = 'Not Started Yet'; task.finishedDate = ''; }
+        saveAndRender();
+    }
+
+    function copyPath(p) { navigator.clipboard.writeText(p); alert('File Path Copied!'); }
+    function deleteTask(id) { if(confirm('Remove this task?')) { tasks = tasks.filter(t => t.id !== id); saveAndRender(); } }
+    
+    function exportToCSV() {
+        let csv = '\uFEFFTitle,Priority,Assignee,Deadline,Finished,Status,Progress\n';
+        tasks.forEach(t => csv += `"${t.title}","${t.priority}","${t.assignee}","${t.dueDate}","${t.finishedDate}","${t.status}","${t.progress}%"\n`);
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'Arts_Office_Report.csv';
+        a.click();
+    }
+
+    renderTasks();
+    updateStats();
+</script>
+</body>
+</html>
